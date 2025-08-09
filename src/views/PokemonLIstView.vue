@@ -1,6 +1,12 @@
 <template>
   <div class="pokemon-list" ref="listContainer">
-    <h3>포켓몬 도감</h3>
+    <div class="logo">
+      <img
+        src="/logo.png"
+        alt="포켓몬 도감"
+        style="width: 200px; height: auto"
+      />
+    </div>
 
     <input
       type="text"
@@ -34,7 +40,7 @@ const searchText = ref("");
 const loading = ref(false);
 const noMoreData = ref(false);
 
-const limit = 20;
+const limit = 24;
 let offset = 0;
 
 const listContainer = ref(null);
@@ -118,6 +124,11 @@ onBeforeUnmount(() => {
   max-width: 300px;
   border-radius: 6px;
   border: 1px solid #ccc;
+}
+
+.logo img {
+  display: block;
+  margin: 0 auto;
 }
 
 .grid {
