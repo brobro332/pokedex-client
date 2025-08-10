@@ -5,15 +5,18 @@
   </router-link>
 </template>
 
-<script setup>
-defineProps({
-  name: String,
-  image: String,
-  id: Number,
-});
+<script setup lang="ts">
+interface Props {
+  name: string;
+  image: string;
+  id: number;
+}
 
-function onImgError(event) {
-  event.target.src = "/default-pokemon.png";
+const props = defineProps<Props>();
+
+function onImgError(event: Event) {
+  const target = event.target as HTMLImageElement;
+  target.src = "/default-pokemon.png";
 }
 </script>
 

@@ -30,26 +30,32 @@
   </div>
 </template>
 
-<script setup>
+<script setup lang="ts">
 import { ref, computed, onMounted, onBeforeUnmount } from "vue";
 import axios from "axios";
 import PokemonCard from "../components/PokemonCard.vue";
 
-const pokemonList = ref([]);
-const searchText = ref("");
-const loading = ref(false);
-const noMoreData = ref(false);
+interface Pokemon {
+  name: string;
+  id: string;
+  image: string;
+}
+
+const pokemonList = ref<Pokemon[]>([]);
+const searchText = ref<string>("");
+const loading = ref<boolean>(false);
+const noMoreData = ref<boolean>(false);
 
 const limit = 24;
 let offset = 0;
 
-const listContainer = ref(null);
+const listContainer = ref<HTMLElement | null>(null);
 
-const fetchPokemon = async () => {
+const fetchPokemon = async (): Promise<void> => {
   if (loading.value || noMoreData.value) return;
   loading.value = true;
   try {
-    const res = await axios.get(
+    const res = await axios.get<{ results: { name: string; url: string }[] }>(
       `https://pokeapi.co/api/v2/pokemon?limit=${limit}&offset=${offset}`
     );
     const results = res.data.results;
@@ -57,8 +63,8 @@ const fetchPokemon = async () => {
     if (results.length === 0) {
       noMoreData.value = true;
     } else {
-      const newPokemons = results.map((p) => {
-        const id = p.url.split("/").filter(Boolean).pop();
+      const newPokemons: Pokemon[] = results.map((p) => {
+        const id = p.url.split("/").filter(Boolean).pop() || "";
         return {
           name: p.name,
           id,
@@ -74,14 +80,14 @@ const fetchPokemon = async () => {
   }
 };
 
-const filteredList = computed(() => {
+const filteredList = computed<Pokemon[]>(() => {
   if (!searchText.value) return pokemonList.value;
   return pokemonList.value.filter((p) =>
     p.name.toLowerCase().includes(searchText.value.toLowerCase())
   );
 });
 
-const handleScroll = () => {
+const handleScroll = (): void => {
   const container = listContainer.value;
   if (!container || loading.value || noMoreData.value) return;
 
@@ -95,15 +101,13 @@ const handleScroll = () => {
 
 onMounted(() => {
   fetchPokemon();
-  if (listContainer.value) {
-    listContainer.value.addEventListener("scroll", handleScroll);
-  }
+  const container = listContainer.value;
+  container?.addEventListener("scroll", handleScroll);
 });
 
 onBeforeUnmount(() => {
-  if (listContainer.value) {
-    listContainer.value.removeEventListener("scroll", handleScroll);
-  }
+  const container = listContainer.value;
+  container?.removeEventListener("scroll", handleScroll);
 });
 </script>
 

@@ -1,7 +1,7 @@
 <template>
   <div class="pokemon-detail" v-if="pokemon">
     <h2 class="name">{{ pokemon.name }}</h2>
-    <img :src="pokemon.image" :alt="pokemon.name" />
+    <img :src="pokemon.image ?? ''" :alt="pokemon.name" />
 
     <ul class="info-list">
       <li><strong>ID:</strong> {{ pokemon.id }}</li>
@@ -25,18 +25,35 @@
   <button class="back-button" @click="goBack">메인으로 돌아가기</button>
 </template>
 
-<script setup>
+<script setup lang="ts">
 import { ref, onMounted } from "vue";
 import { useRoute, useRouter } from "vue-router";
 import axios from "axios";
 
+interface PokemonDetail {
+  id: number;
+  name: string;
+  image: string | null;
+  height: number;
+  weight: number;
+  types: string[];
+}
+
 const route = useRoute();
 const router = useRouter();
-const pokemon = ref(null);
+const pokemon = ref<PokemonDetail | null>(null);
 
-const fetchPokemonDetail = async (name) => {
+const fetchPokemonDetail = async (name: string): Promise<void> => {
   try {
-    const res = await axios.get(`https://pokeapi.co/api/v2/pokemon/${name}`);
+    const res = await axios.get<{
+      id: number;
+      name: string;
+      sprites: { front_default: string | null };
+      height: number;
+      weight: number;
+      types: { type: { name: string } }[];
+    }>(`https://pokeapi.co/api/v2/pokemon/${name}`);
+
     const data = res.data;
     pokemon.value = {
       id: data.id,
@@ -51,12 +68,15 @@ const fetchPokemonDetail = async (name) => {
   }
 };
 
-const goBack = () => {
+const goBack = (): void => {
   router.push("/");
 };
 
 onMounted(() => {
-  fetchPokemonDetail(route.params.name);
+  const nameParam = route.params.name;
+  if (typeof nameParam === "string") {
+    fetchPokemonDetail(nameParam);
+  }
 });
 </script>
 
